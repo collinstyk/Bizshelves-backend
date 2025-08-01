@@ -30,6 +30,22 @@ const saleSchema = new mongoose.Schema(
       default: "cash",
     },
     customerName: String,
+    status: {
+      type: String,
+      required: true,
+      enum: [
+        "PAID_DELIVERED",
+        "PAID_NOT_DELIVERED",
+        "PAID_PARTLY_DELIVERED",
+        "NOT_PAID_DELIVERED",
+        "NOT_PAID_NOT_DELIVERED",
+        "NOT_PAID_PARTLY_DELIVERED",
+        "PARTLY_PAID_DELIVERED",
+        "PARTLY_PAID_NOT_DELIVERED",
+        "PARTLY_PAID_PARTLY_DELIVERED",
+        "DRAFT",
+      ],
+    },
     date: {
       type: Date,
       default: Date.now,

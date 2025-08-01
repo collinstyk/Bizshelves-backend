@@ -1,10 +1,25 @@
 const mongoose = require("mongoose");
 
+const PurchaseStatus = {
+  PAID_NOT_RECEIVED: "PAID_NOT_RECEIVED",
+  PAID_RECEIVED: "PAID_RECEIVED",
+  PAID_PARTLY_RECEIVED: "PAID_PARTLY_RECEIVED",
+  NOT_PAID_NOT_RECEIVED: "NOT_PAID_NOT_RECEIVED",
+  NOT_PAID_RECEIVED: "NOT_PAID_RECEIVED",
+  NOT_PAID_PARTLY_RECEIVED: "NOT_PAID_PARTLY_RECEIVED",
+  PARTLY_PAID_RECEIVED: "PARTLY_PAID_RECEIVED",
+  PARTLY_PAID_NOT_RECEIVED: "PARTLY_PAID_NOT_RECEIVED",
+  PARTLY_PAID_PARTLY_RECEIVED: "PARTLY_PAID_PARTLY_RECEIVED",
+  DRAFT: "DRAFT",
+};
+
 const breakdownSchema = new mongoose.Schema(
   {
-    unit: String,
-    quantity: Number,
-    pricePerUnit: Number,
+    unit: { type: String, required: true },
+    quantity: { type: Number, required: true },
+    expiryDate: { type: Date },
+    purchasePrice: { type: Number },
+    batchId: { type: String },
   },
   { _id: false }
 );
@@ -13,6 +28,7 @@ const productSaleSchema = new mongoose.Schema(
   {
     product: { type: mongoose.Schema.ObjectId, ref: "CompanyProduct" },
     breakdown: [breakdownSchema],
+    receivedBreakdown: [breakdownSchema],
     totalPrice: Number,
   },
   { _id: false }
@@ -29,12 +45,20 @@ const purchaseSchema = new mongoose.Schema(
       required: true,
       ref: "Company",
     },
-    recievedBy: {
+    purchasedBy: {
       type: mongoose.Schema.ObjectId,
       required: true,
       ref: "User",
     },
+    recievedBy: { type: mongoose.Schema.ObjectId, ref: "User" }, // should be updated when the product(s) is received
     products: [productSaleSchema],
+    status: {
+      type: String,
+      required: true,
+      enum: Object.values(PurchaseStatus),
+    },
+    amountPaid: { type: Number, default: 0 }, // should be indicated when payment is made
+    totalProductCost: { type: Number, required: true },
     transportationCost: Number,
     totalPurchaseCost: { type: Number, required: true },
     paymentMethod: {

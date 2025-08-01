@@ -4,9 +4,6 @@ const AppError = require("../utils/appError");
 const Product = require("../models/productModel");
 const CompanyProduct = require("../models/companyProductModel");
 
-// this create a new product when none exist, together with a company product,
-//  but create only a company product when the product exist
-// only admins are allowed to create/add a product
 exports.createAddProduct = catchAsync(async (req, res, next) => {
   if (req.user.role !== "admin")
     return next(
@@ -22,6 +19,14 @@ exports.createAddProduct = catchAsync(async (req, res, next) => {
     currentStock,
     category,
   } = req.body;
+
+  if (!sellingPricePerUnit)
+    return next(
+      new AppError(
+        400,
+        "Please provide the selling prices per units for this product"
+      )
+    );
 
   let product = await Product.findOne({ name, category });
 
@@ -49,6 +54,7 @@ exports.createAddProduct = catchAsync(async (req, res, next) => {
     costPricePerUnit,
     sellingPricePerUnit,
     inventory: currentStock,
+    category,
   });
 
   res.status(201).json({

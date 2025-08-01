@@ -20,15 +20,29 @@ const companyProductSchema = new mongoose.Schema(
     sellingPricePerUnit: {
       type: Map,
       of: Number, // e.g. { "carton": 50000, "bottle": 5500 }
-      required: true,
+      required: false,
     },
     inventory: {
       type: Map,
       of: Number, // { "carton": 10, "bottle": 5 }
       default: {},
     },
+    status: {
+      type: String,
+      enum: [
+        "SELLING_PRICE_SET",
+        "COST_PRICE_SET",
+        "SELLING_PRICE_NOT_SET",
+        "COST_PRICE_NOT_SET",
+      ],
+    },
+    category: {
+      type: String,
+      required: [true, "Please provide a category for this product"],
+    },
     productionDate: Date,
     expiryDate: Date,
+    batchId: String,
   },
   {
     timestamps: true,

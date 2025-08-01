@@ -29,7 +29,11 @@ const userSchema = new Schema({
       message: "Passwords does not match",
     },
   },
-  role: { type: String, enum: ["admin", "auditor", "staff"], default: "staff" },
+  role: {
+    type: String,
+    enum: ["admin", "auditor", "staff", "others"],
+    default: "staff",
+  },
   company: {
     type: mongoose.Schema.ObjectId,
     ref: "Company",
@@ -67,6 +71,8 @@ userSchema.pre("save", async function (next) {
     const random = Math.floor(1000 + Math.random() * 9000);
     console.log(random);
     username = `${this.name.toLowerCase().split(" ")[0]}-${random}`;
+
+    // check if the username already exist in the DataBase
     exists = await User.exists({ username });
   }
 
@@ -90,19 +96,12 @@ userSchema.method("passwordChangedAfter", function (timeStamp) {
   return passwordChangedAtSecs > timeStamp;
 });
 
-userSchema.methods.createToken = function (field) {
+userSchema.methods.createToken = function () {
   const token = crypto.randomBytes(32).toString("hex");
   const hash = crypto.createHash("sha256").update(token).digest("hex");
 
-  if (field === "password") {
-    this.passwordResetToken = hash;
-    this.passwordResetExpires = Date.now() + 600000; // 10 mins;
-  }
-
-  if (field === "email") {
-    this.emailConfirmToken = hash;
-    this.emailConfirmExpires = Date.now() + 72 * 60 * 60 * 1000; // 72 hours
-  }
+  this.passwordResetToken = hash;
+  this.passwordResetExpires = Date.now() + 600000; // 10 mins;
 
   return token;
 };

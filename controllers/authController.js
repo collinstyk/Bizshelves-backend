@@ -1,12 +1,18 @@
+const crypto = require("crypto");
+
 const jwt = require("jsonwebtoken");
+const validator = require("validator");
 
 const util = require("util");
 
 const catchAsync = require("../utils/catchAsync");
+const createHTML = require("../utils/html");
+const { sendMail } = require("../utils/email");
 
 const User = require("../models/userModel");
 const Company = require("../models/companyModel");
 const AppError = require("../utils/appError");
+const client = require("../utils/redis");
 
 const signToken = (id) => {
   return jwt.sign({ id }, process.env.JWT_SECRET_KEY, {
@@ -37,6 +43,89 @@ const createAndSendToken = (user, res, id, status, message = "Successful!") => {
   });
 };
 
+exports.sendConfirmEmailOtp = catchAsync(async (req, res, next) => {
+  console.log(`${req.protocol}://${req.get("host")}`);
+
+  // recieve user email
+  const email = req.body.email;
+
+  // validate email
+  if (!validator.isEmail(email))
+    return next(new AppError(400, "Invalid email provided"));
+
+  // generate email confirmation otp
+  const digits = "0123456789";
+
+  let otp = "";
+  for (let i = 0; i < 6; i++) {
+    const randomIndex = crypto.randomInt(digits.length);
+    otp += digits[randomIndex];
+  }
+
+  console.log(otp);
+
+  // send otp to user email
+  const html = createHTML({
+    otp,
+    sender: "Collins",
+    expirationTime: 5,
+  });
+
+  await sendMail({
+    email,
+    subject: "Verify your email",
+    text: `Please verify your email using the One-Time Password provided below:
+    ${otp}
+    Note: This code is valid for 5 minutes.
+    
+    Please ignore if you did not request the OTP.
+    Thank you for choosing BizShelves.
+    Best regards, Collins
+    BizShelves LTD`,
+    html,
+  });
+
+  // temporary store the user's email and the otp(redis)
+  await client.set(`${email}:email`, email, "EX", 300);
+  await client.set(`${email}:otp`, otp, "EX", 300);
+
+  res.status(200).json({
+    status: "success",
+    message: "OTP sent to your email",
+  });
+});
+
+exports.confirmEmail = catchAsync(async (req, res, next) => {
+  const { email, otp } = req.body;
+
+  const exists = await client.exists(`${email}:otpattempts`);
+
+  if (!exists) await client.set(`${email}:otpattempts`, 0, "EX", 300);
+
+  const attempts = await client.get(`${email}:otpattempts`);
+
+  // check the number of attempts
+  await client.incr(`${email}:otpattempts`);
+  if (attempts > 5)
+    return next(new AppError(429, "Too many request. Try again later."));
+
+  // check the otp
+  const storedOtp = await client.get(`${email}:otp`);
+
+  if (!storedOtp) return next(new AppError(400, "OTP expired or not found"));
+
+  if (storedOtp !== otp) return next(new AppError(401, "Invalid otp"));
+
+  // clean up after successful verification
+  await client.del(`${email}:otp`);
+  await client.del(`${email}:otpattempts`);
+
+  res.status(200).json({
+    status: "success",
+    message: "Email verified. You can now continue with your account creation.",
+  });
+});
+
 exports.signUp = catchAsync(async (req, res, next) => {
   // console.log(`${req.protocol}://${req.get("host")}`);
 
@@ -45,14 +134,13 @@ exports.signUp = catchAsync(async (req, res, next) => {
   // allow only admins to create company and company code
   if (req.body.role === "admin") {
     // create company code
-    const code = `${req.body.company
+    const code = `${req.body.companyName
       .toLowerCase()
       .replace(/\s+/g, "-")}-${Math.floor(Math.random() * 10000)}`;
 
     // create company
     const newCompany = await Company.create({
-      name: req.body.company,
-      username: req.body.username,
+      name: req.body.companyName,
       companyCode: code,
       address: req.body.address,
       description: req.body.description,
@@ -69,8 +157,6 @@ exports.signUp = catchAsync(async (req, res, next) => {
       companyCode: req.body.companyCode,
     });
     if (!company) return next(new AppError(400, "Invalid company code"));
-
-    console.log(company);
 
     companyId = company._id;
   }
@@ -95,29 +181,24 @@ exports.signUp = catchAsync(async (req, res, next) => {
 });
 
 exports.login = catchAsync(async (req, res, next) => {
-  const { email, username, password } = req.body;
-  if ((!email && !username) || !password)
+  const { identifier, password } = req.body;
+  if (!identifier || !password)
     return next(
       new AppError(400, "Please provide your email/username and password")
     );
 
-  if (email && username)
-    return next(
-      new AppError(400, "Please use either only email or only username")
-    );
-
   let user;
-  if (email) {
-    user = await User.findOne({ email }).select("+password");
+  if (validator.isEmail(identifier)) {
+    // check if identifier exist as an email
+    user = await User.findOne({ email: identifier }).select("+password");
+
+    // if not, check if identifier exist as an username
+    if (!user)
+      user = await User.findOne({ username: identifier }).select("+password");
+
     // check for password
     if (!user || !(await user.correctPassword(password, user.password)))
-      return new AppError(400, "Wrong email or password");
-  }
-  if (username) {
-    user = await User.findOne({ username }).select("+password");
-    // check for password
-    if (!user || !(await user.correctPassword(password, user.password)))
-      return new AppError(400, "Wrong email or password");
+      return next(new AppError(400, "Invalid credentials"));
   }
 
   createAndSendToken(user, res, user._id, 200, "login successful");

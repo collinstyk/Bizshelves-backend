@@ -37,6 +37,7 @@ io.on("connection", (socket) => {
 
   socket.on("check-product", (data) => {
     console.log("Product check requested", data);
+    s;
 
     // Just a test example, to be editted when trying to send sales data
     const testStockQuantity = 200;

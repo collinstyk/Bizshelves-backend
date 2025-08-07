@@ -189,12 +189,19 @@ exports.login = catchAsync(async (req, res, next) => {
 
   let user;
   if (validator.isEmail(identifier)) {
-    // check if identifier exist as an email
+    // checking if identifier exist as an email
     user = await User.findOne({ email: identifier }).select("+password");
 
-    // if not, check if identifier exist as an username
+    // checking if identifier (in email format) exist as an username if not email
     if (!user)
       user = await User.findOne({ username: identifier }).select("+password");
+
+    // checking for password
+    if (!user || !(await user.correctPassword(password, user.password)))
+      return next(new AppError(400, "Invalid credentials"));
+  } else {
+    // checking for username
+    user = await User.findOne({ username: identifier }).select("+password");
 
     // check for password
     if (!user || !(await user.correctPassword(password, user.password)))
@@ -206,6 +213,7 @@ exports.login = catchAsync(async (req, res, next) => {
 
 exports.protect = catchAsync(async (req, res, next) => {
   let token;
+
   if (
     req.headers.authorization &&
     req.headers.authorization.startsWith("Bearer")

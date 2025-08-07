@@ -4,6 +4,43 @@ const AppError = require("../utils/appError");
 const Product = require("../models/productModel");
 const CompanyProduct = require("../models/companyProductModel");
 
+exports.getAllCompanyProducts = catchAsync(async (req, res, next) => {
+  const companyProducts = await CompanyProduct.find();
+
+  res.status(200).json({
+    status: "success",
+    data: { companyProducts },
+  });
+});
+
+exports.getCompanyProducts = catchAsync(async (req, res, next) => {
+  const companyId = req.user.company;
+
+  const companyProducts = await CompanyProduct.find({
+    company: companyId,
+  }).populate("product");
+
+  res.status(200).json({
+    status: "success",
+    data: { companyProducts },
+  });
+});
+
+// exports.getCompanyProductsNames = catchAsync(async (req, res, next) => {
+//   const companyId = req.user.company;
+
+//   const companyProducts = await CompanyProduct.find({
+//     company: companyId,
+//   }).populate({ path: "product", select: "name" });
+
+//   const productsNames = companyProducts.map((product) => product.product.name);
+
+//   res.status(200).json({
+//     status: "success",
+//     data: { productsNames },
+//   });
+// });
+
 exports.createAddProduct = catchAsync(async (req, res, next) => {
   if (req.user.role !== "admin")
     return next(
@@ -63,5 +100,16 @@ exports.createAddProduct = catchAsync(async (req, res, next) => {
       product,
       companyProduct,
     },
+  });
+});
+
+exports.deleteProduct = catchAsync(async (req, res, next) => {
+  const { productId: id } = req.params;
+
+  await CompanyProduct.findByIdAndDelete(id);
+
+  res.status(204).json({
+    status: "success",
+    message: "Product successfully deleted",
   });
 });

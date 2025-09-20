@@ -4,7 +4,7 @@ const PurchaseStatus = {
   PAID_NOT_RECEIVED: "PAID_NOT_RECEIVED",
   PAID_RECEIVED: "PAID_RECEIVED",
   PAID_PARTLY_RECEIVED: "PAID_PARTLY_RECEIVED",
-  NOT_PAID_NOT_RECEIVED: "NOT_PAID_NOT_RECEIVED",
+  NOT_PAID_NOT_RECEIVED: "NOT_PAID_NOT_RECEIVED", // will be replaced by draft most times unless any special case
   NOT_PAID_RECEIVED: "NOT_PAID_RECEIVED",
   NOT_PAID_PARTLY_RECEIVED: "NOT_PAID_PARTLY_RECEIVED",
   PARTLY_PAID_RECEIVED: "PARTLY_PAID_RECEIVED",
@@ -15,8 +15,8 @@ const PurchaseStatus = {
 
 const breakdownSchema = new mongoose.Schema(
   {
-    unit: { type: String, required: true },
-    quantity: { type: Number, required: true },
+    unit: { type: String, required: true }, // carton
+    quantity: { type: Number, required: true }, // 4
     expiryDate: { type: Date },
     purchasePrice: { type: Number },
     batchId: { type: String },
@@ -74,3 +74,13 @@ const purchaseSchema = new mongoose.Schema(
 const Purchase = mongoose.model("Purchase", purchaseSchema);
 
 module.exports = Purchase;
+
+/*
+{
+  boughtFrom: 'Chrisemua and sons',
+  purchaseBy: mongoDbObjectID,
+  recievedBy: mongoDbObjectID,
+  products: [{product: 'Jameson'
+              }]
+}
+*/

@@ -10,5 +10,24 @@
     "redis": "^5.1.0",
     "socket.io": "^4.8.1",
     "validator": "^13.15.0"
-  }
+  },
+  "name": "bizshelves-backend",
+  "version": "1.0.0",
+  "description": "track your business goods and cashflow",
+  "main": "server.js",
+  "devDependencies": {},
+  "scripts": {
+    "test": "nodemon server.js",
+    "start": "node server.js"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/collinstyk/Bizshelves-backend.git"
+  },
+  "author": "Collins Achusiogu",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/collinstyk/Bizshelves-backend/issues"
+  },
+  "homepage": "https://github.com/collinstyk/Bizshelves-backend#readme"
 }

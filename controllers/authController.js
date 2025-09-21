@@ -231,6 +231,8 @@ exports.protect = catchAsync(async (req, res, next) => {
     process.env.JWT_SECRET_KEY
   );
 
+  console.log(id);
+
   const currentUser = await User.findById(id);
   if (!currentUser || !currentUser.active)
     return next(

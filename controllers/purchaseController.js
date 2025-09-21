@@ -9,6 +9,7 @@ exports.recordPurchase = catchAsync(async (req, res, next) => {
   // 1) extract the user id and company id from the req.user
   if (!req.user)
     return new AppError(400, "Login or sign up to perform this action.");
+  console.log(user);
   const { _id: userId, company: companyId } = req.user;
 
   // 2) Extract the neccesary data from the request body

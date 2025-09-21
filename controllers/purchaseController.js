@@ -3,9 +3,12 @@ const catchAsync = require("../utils/catchAsync");
 const Purchase = require("../models/purchaseModel");
 const Product = require("../models/productModel");
 const CompanyProduct = require("../models/companyProductModel");
+const AppError = require("../utils/appError");
 
 exports.recordPurchase = catchAsync(async (req, res, next) => {
   // 1) extract the user id and company id from the req.user
+  if (!req.user)
+    return new AppError(400, "Login or sign up to perform this action.");
   const { _id: userId, company: companyId } = req.user;
 
   // 2) Extract the neccesary data from the request body

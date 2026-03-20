@@ -35,6 +35,7 @@ const companyProductSchema = new mongoose.Schema(
         "SELLING_PRICE_NOT_SET",
         "COST_PRICE_NOT_SET",
       ],
+      default: "SELLING_PRICE_NOT_SET",
     },
     category: {
       type: String,
@@ -46,7 +47,7 @@ const companyProductSchema = new mongoose.Schema(
   },
   {
     timestamps: true,
-  }
+  },
 );
 
 const CompanyProduct = mongoose.model("CompanyProduct", companyProductSchema);

@@ -44,7 +44,7 @@ exports.getCompanyProducts = catchAsync(async (req, res, next) => {
 exports.createAddProduct = catchAsync(async (req, res, next) => {
   if (req.user.role !== "admin")
     return next(
-      new AppError(401, "You are not authorized to initiate this action")
+      new AppError(401, "You are not authorized to initiate this action"),
     );
   const companyId = req.user.company;
   const {
@@ -61,8 +61,8 @@ exports.createAddProduct = catchAsync(async (req, res, next) => {
     return next(
       new AppError(
         400,
-        "Please provide the selling prices per units for this product"
-      )
+        "Please provide the selling prices per units for this product",
+      ),
     );
 
   let product = await Product.findOne({ name, category });

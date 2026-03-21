@@ -1,10 +1,6 @@
 const mongoose = require("mongoose");
 
-const {
-  PurchaseState,
-  ReceivingStatus,
-  PaymentStatus,
-} = require("../utils/constants");
+const { ReceivingStatus } = require("../utils/constants");
 const Purchase = require("./purchaseModel");
 
 const purchaseItemSchema = new mongoose.Schema(

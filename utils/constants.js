@@ -1,4 +1,4 @@
-exports.PurchaseState = {
+exports.TransactionState = {
   DRAFT: "DRAFT",
   CONFIRMED: "CONFIRMED",
   CANCELLED: "CANCELLED",
@@ -7,6 +7,11 @@ exports.ReceivingStatus = {
   NOT_RECEIVED: "NOT_RECEIVED",
   PARTLY_RECEIVED: "PARTLY_RECEIVED",
   RECEIVED: "RECEIVED",
+};
+exports.DeliveryStatus = {
+  NOT_DELIVERED: "NOT_DELIVERED",
+  PARTLY_DELIVERED: "PARTLY_DELIVERED",
+  DELIVERED: "DELIVERED",
 };
 exports.PaymentStatus = {
   NOT_PAID: "NOT_PAID",

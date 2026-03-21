@@ -1,6 +1,6 @@
 const mongoose = require("mongoose");
 const {
-  PurchaseState,
+  TransactionState,
   ReceivingStatus,
   PaymentStatus,
 } = require("./../utils/constants");
@@ -10,7 +10,7 @@ const purchaseSchema = new mongoose.Schema(
     supplier: {
       type: String,
       required: function () {
-        return this.PurchaseState === "CONFIRMED";
+        return this.purchaseState === "CONFIRMED";
       },
     },
     company: { type: mongoose.Schema.ObjectId, required: true, ref: "Company" },
@@ -19,7 +19,7 @@ const purchaseSchema = new mongoose.Schema(
     purchaseState: {
       type: String,
       required: true,
-      enum: Object.values(PurchaseState),
+      enum: Object.values(TransactionState),
     },
     receivingStatus: {
       type: String,

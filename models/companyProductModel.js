@@ -22,11 +22,13 @@ const companyProductSchema = new mongoose.Schema(
       of: Number, // e.g. { "carton": 50000, "bottle": 5500 }
       required: false,
     },
-    inventory: {
+    packagingUnits: {
       type: Map,
-      of: Number, // { "carton": 10, "bottle": 5 }
+      of: Number, // { "carton": 12, "pack": 6 }
       default: {},
     },
+    baseUnit: { type: String, required: true },
+    availableStock: { type: Number, required: true },
     status: {
       type: String,
       enum: [

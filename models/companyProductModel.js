@@ -22,12 +22,6 @@ const companyProductSchema = new mongoose.Schema(
       of: Number, // e.g. { "carton": 50000, "bottle": 5500 }
       required: false,
     },
-    packagingUnits: {
-      type: Map,
-      of: Number, // { "carton": 12, "pack": 6 }
-      default: {},
-    },
-    baseUnit: { type: String, required: true },
     availableStock: { type: Number, required: true },
     status: {
       type: String,
@@ -38,10 +32,6 @@ const companyProductSchema = new mongoose.Schema(
         "COST_PRICE_NOT_SET",
       ],
       default: "SELLING_PRICE_NOT_SET",
-    },
-    category: {
-      type: String,
-      required: [true, "Please provide a category for this product"],
     },
     productionDate: Date,
     expiryDate: Date,

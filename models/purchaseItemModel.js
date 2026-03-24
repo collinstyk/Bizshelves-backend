@@ -23,7 +23,7 @@ const purchaseItemSchema = new mongoose.Schema(
       min: [1, "Quantity ordered must be greater than 0"],
     },
     packagingUnit: { type: String, required: true, min: 1 },
-    unitsPerPackage: { type: String, required: true, min: 1 },
+    unitsPerPackage: { type: Number, required: true, min: 1 },
     quantityReceived: {
       type: Number,
       default: 0,

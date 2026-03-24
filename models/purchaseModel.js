@@ -58,8 +58,6 @@ purchaseSchema.pre("save", function (next) {
   next();
 });
 
-// Update
-
 const Purchase = mongoose.model("Purchase", purchaseSchema);
 
 module.exports = Purchase;

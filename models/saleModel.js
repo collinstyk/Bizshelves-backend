@@ -1,59 +1,54 @@
 const mongoose = require("mongoose");
 
-const breakdownSchema = new mongoose.Schema(
-  {
-    unit: String,
-    quantity: Number,
-    pricePerUnit: Number,
-  },
-  { _id: false }
-);
-
-const productSaleSchema = new mongoose.Schema(
-  {
-    product: { type: mongoose.Schema.ObjectId, ref: "CompanyProduct" },
-    breakdown: [breakdownSchema],
-    totalPrice: Number,
-  },
-  { _id: false }
-);
+const {
+  TransactionState,
+  DeliveryStatus,
+  PaymentStatus,
+} = require("./../utils/constants");
 
 const saleSchema = new mongoose.Schema(
   {
+    customer: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "Contact",
+      required: function () {
+        return this.saleState === "CONFIRMED";
+      },
+    },
     company: { type: mongoose.Schema.ObjectId, ref: "Company", required: true },
-    soldBy: { type: mongoose.Schema.ObjectId, ref: "User", required: true },
-    products: [productSaleSchema],
+    seller: { type: mongoose.Schema.ObjectId, ref: "User", required: true },
     totalSaleAmount: { type: Number, required: true },
+    totalPaid: { type: Number, default: 0 },
     paymentMethod: {
       type: String,
       enum: ["cash", "bank transfer", "POS", "credit"],
       default: "cash",
     },
-    customerName: String,
-    status: {
+    saleState: {
       type: String,
       required: true,
-      enum: [
-        "PAID_DELIVERED",
-        "PAID_NOT_DELIVERED",
-        "PAID_PARTLY_DELIVERED",
-        "NOT_PAID_DELIVERED",
-        "NOT_PAID_NOT_DELIVERED",
-        "NOT_PAID_PARTLY_DELIVERED",
-        "PARTLY_PAID_DELIVERED",
-        "PARTLY_PAID_NOT_DELIVERED",
-        "PARTLY_PAID_PARTLY_DELIVERED",
-        "DRAFT",
-      ],
+      enum: Object.values(TransactionState),
     },
-    date: {
-      type: Date,
-      default: Date.now,
+    deliveryStatus: {
+      type: String,
+      required: true,
+      enum: Object.values(DeliveryStatus),
     },
+    paymentStatus: {
+      type: String,
+      required: true,
+      enum: Object.values(PaymentStatus),
+    },
+
+    createdAt: { type: Date, default: Date.now },
+    confirmedAt: Date,
   },
-  { timestamps: true }
+  { timestamps: true },
 );
 
 const Sale = mongoose.model("Sale", saleSchema);
 
 module.exports = Sale;
+
+// TODO
+// Different Payment method can exist on one sale, depending on the payment status
